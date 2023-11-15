@@ -10,7 +10,17 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# insert chunk => ctrl + alt + i
+```{r include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+
+# Defina a família de fontes globalmente
+# theme_set(theme_bw(base_family = "Arial"))
+```
+
+
+insert chunk => ctrl + alt + i
 
 **principais argumentos dos chunks**
 
@@ -25,9 +35,6 @@ knitr::opts_chunk$set(echo = TRUE)
 *fig.cap = "..." adds a caption to graphical results.
 
 ```{r include=FALSE, message=FALSE}
-library(tidyverse)
-library(knitr)
-
 t <- seq(10)
 x <- seq(10, 28, 2)
 y <- c(250, 235, 250, 248, 220, 205, 200, 210, 200, 190)
@@ -40,7 +47,6 @@ df <- df %>%
 df
 ```
 
-## Including Plots
 
 ```{r, echo=FALSE}
 sm = summary(df)
@@ -55,53 +61,85 @@ df %>%
             Q2 = quantile(r, 0.5),
             Q3 = quantile(r, 0.75),
             media = mean(r),
-            sd = sd(r)) |> 
-  kable(caption='Estatística descritiva para a Renda')
+            sd = round(sd(r), 2)) |> 
+  kable(caption='Estatística descritiva para a Renda',
+        col.names = c("n",
+                      "Min",
+                      "Max",
+                      "$Q_1$",
+                      "$Q_2$",
+                      "$Q_3$",
+                      "$\\bar{X}$",
+                      "$\\sigma$"))
 ```
 
-
-```{r}
-df %>% 
+# Questão A
+```{r echo=FALSE}
+fig.1 <- df %>% 
   ggplot(aes(x=t, y=r))+
   geom_line(col='green')+
-  geom_point()
+  geom_point(size=2)+
+  labs(caption='Figura 1: ')+
+  theme(plot.title=element_text(hjust=0.5),
+        plot.caption = element_text(hjust=0))+
+  theme_test()
+
+fig.1
 ```
 
-# Exercício 1
+
 #a)
 ```{r}
 summary(df)
 ```
 
 
-#b)
-```{r}
-model2 <- lm(r~t, data=df)
-model2$coefficients
+# Questão B
+```{r echo=FALSE}
+fit.1 <- lm(r~t, data=df)
+fit.1$coefficients
+
+fig.1+
+  geom_smooth(method=lm,se=FALSE,col="2")
 ```
 
+## Modelo de regressão linear básico com apenas uma variável regressora: ##
 
-# Y = 2374.9333 + 310.1576 * X
 
-#c)
+
+$$
+  Y_i = \beta_0 + \beta_1X_i + \epsilon_i
+$$
+
+## Modelo com os parâmetros $\beta_0$ e $\beta_1$ estimados: ##
+
+
+
+$$
+  Y_i = 2374.9333 + 310.1576X_i + \epsilon_i
+$$
+
+# Questão C
 ```{r}
 plot(df$t, df$r)
-abline(model2$coefficients, col='red')
+abline(fit.1$coefficients, col='red')
 ```
 
 ```{r}
-plot(model2$residuals)
+plot(fit.1$residuals)
 abline(0,0,col='red')
 ```
 
-#d)
+# Questão D
 ```{r}
-summary(model2)
-confint(model2, level = 0.95)
+summary(fit.1)
+confint(fit.1, level = 0.95)
 ```
 
 # Para cada mês adicional, a receita aumenta, em média, em R$ 310, podendo variar entre R$ 259 a R$ 362
 
-#e)
+# Questão E
+```{r}
 novos_meses <- tibble(t=c(11, 12))
-predict(model2, newdata = novos_meses)
+predict(fit.1, newdata = novos_meses)
+```
