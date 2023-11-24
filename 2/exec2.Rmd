@@ -1,0 +1,98 @@
+---
+title: "Exercício 2"
+author: "Rodrigo Barbosa"
+date: "2023-11-19"
+output: pdf_document
+---
+
+```{r include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+library(readxl)
+library(corrplot)
+```
+
+```{r include=FALSE}
+# Leitura da base
+dados <- read_excel("C:/2023.2/Modelos Lineares I/prática/2/DADOS demanda por frango.xlsx")
+
+# Criação da variável X6
+dados <- dados |>
+  select(-Ano) |> 
+  mutate(X6 = (X4+X5)/2)
+```
+
+```{r echo=FALSE}
+# Calcule a matriz de correlação
+matriz_correlacao <- round(cor(dados), 2)
+kable(matriz_correlacao, caption = 'Matriz de correlação')
+```
+
+
+\
+```{r include=FALSE, fig.cap="Correlação entre Variáveis"}
+# Crie um gráfico de matriz de correlação usando a biblioteca corrplot
+corrplot(
+  matriz_correlacao, 
+  method = "number",   # Define o método como "triangle"
+  type = "upper",        # Exibe apenas a parte superior da matriz
+  tl.col = "black",      # Cor do texto
+  tl.srt = 1             # Rotação do texto em graus
+)
+```
+
+```{r echo=FALSE}
+# (1)	Y= f(X2,X3)
+model1 <- lm(Y~X2+X3, dados)
+# summary(model1) # Adjusted R-squared:  0.9019 
+
+# (2)	Y= f(X2,X3,X4)
+model2 <- lm(Y~X2+X3+X4, dados)
+# summary(model2) # Adjusted R-squared:  0.9267
+
+# (3)	Y= f(X2,X3,X5)
+model3 <- lm(Y~X2+X3+X5, dados)
+# summary(model3) # Adjusted R-squared:  0.8977
+
+# (4)	Y=f(X2,X3,X6)
+model4 <- lm(Y~X2+X3+X6, dados)
+# summary(model4) # Adjusted R-squared:  0.9208
+
+calc_models = function(...){
+  model_list <- list(...)
+  models <- tibble(
+    call = character(),
+    r2_ajustado = numeric(),
+    aic = numeric()
+  )
+  for (model in model_list) {
+    models <- add_row(models, 
+                      call = deparse(model$call), 
+                      r2_ajustado = summary(model)$adj.r.squared,
+                      aic = AIC(model))
+  }
+  return(models)
+}
+
+models <- calc_models(model1,model2,model3,model4)
+kable(models, caption = 'Modelos ajustados',
+      col.names = c("modelo",
+                    "$R^2ajustado$",
+                    "AIC"))
+```
+
+Eu escolheria a função (2), cujo modelo é $Y_i = \beta_0 + \beta_1X_{2i} + \beta_2X_{3i}+ \beta_3X_{4i} + \epsilon_i$, pois o $R^2$ ajustado e o Critério de Informação Akaike é o mais adequado entre os modelos ajustados
+
+
+\
+\
+```{r echo=FALSE}
+# Extrair coeficientes e p-valores
+coef_p_val <- summary(model2)$coefficients[, c(1, 4)]
+
+# Tabela formatada usando kable
+kable(coef_p_val, caption = "Tabela de Coeficientes e P-valores")
+```
+
+Todos os coeficientes da regressão são estatisticamente significativos ao nível de 5%. Este é o melhor modelo.

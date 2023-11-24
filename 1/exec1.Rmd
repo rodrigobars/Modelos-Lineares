@@ -116,7 +116,7 @@ $$
 
 
 $$
-  Y_i = 2374.9333 + 310.1576X_i + \epsilon_i
+  \hat{Y} = 2374.9333 + 310.1576X
 $$
 
 # Questão C
@@ -143,3 +143,12 @@ confint(fit.1, level = 0.95)
 novos_meses <- tibble(t=c(11, 12))
 predict(fit.1, newdata = novos_meses)
 ```
+
+ \begin{equation}
+ f(x) =
+   \left\{\begin{array}{lr}
+       f_1(x), & -\infty < x \le a_1 \\
+       f_2(x), & a_1 < x \le a_2 
+    \end{array}\right.
+ \end{equation}
+ 
